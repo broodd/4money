@@ -2,7 +2,6 @@ import { CategoryEntity } from '../entities/category.entity';
 import { CommonService } from './common.service';
 
 import { FindManyBracketsOptions } from '../interfaces/common.interface';
-import { dataSource } from '../data-sources/data-source';
 import { EntityManager } from 'typeorm';
 
 /**

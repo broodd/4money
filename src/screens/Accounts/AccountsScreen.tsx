@@ -80,8 +80,8 @@ export const AccountsScreen = () => {
         isOpen={isModalOpen}
         initialAccount={selectedAccount}
         onClose={() => setIsModalOpen(false)}
-        onSave={async (data) => await createOrEditMutation.mutateAsync(data)}
-        onDelete={async (data) => await deleteMutation.mutateAsync(data)}
+        onSave={(data) => createOrEditMutation.mutateAsync(data)}
+        onDelete={(data) => deleteMutation.mutateAsync(data)}
       />
 
       {/* <Modal

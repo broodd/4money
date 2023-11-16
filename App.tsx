@@ -3,6 +3,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
+import { TransactionsScreen } from './src/screens/Transactions/TransactionsScreen';
 import { CategoriesScreen } from './src/screens/Categories/CategoriesScreen';
 import { AccountsScreen } from './src/screens/Accounts/AccountsScreen';
 
@@ -21,6 +22,7 @@ function App() {
           <Tab.Navigator initialRouteName="Accounts" screenOptions={{ headerShown: false }}>
             <Tab.Screen name="Accounts" component={AccountsScreen} />
             <Tab.Screen name="Categories" component={CategoriesScreen} />
+            <Tab.Screen name="Transactions" component={TransactionsScreen} />
           </Tab.Navigator>
         </NavigationContainer>
       </SafeAreaView>

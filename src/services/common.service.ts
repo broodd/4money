@@ -35,7 +35,7 @@ export class CommonService<EntityClass extends CommonEntity> {
     entityLike: DeepPartial<EntityClass>,
     entityManager?: EntityManager,
   ): Promise<EntityClass> {
-    const { id } = await this.repository.manager.transaction(async (runEntityManager) => {
+    return this.repository.manager.transaction(async (runEntityManager) => {
       const transactionalEntityManager = entityManager || runEntityManager;
 
       const entity = this.repository.create(entityLike);
@@ -44,7 +44,18 @@ export class CommonService<EntityClass extends CommonEntity> {
         throw new Error('INPUT_DATA_ERROR');
       });
     });
+  }
 
+  /**
+   * [description]
+   * @param entityLike
+   * @param entityManager
+   */
+  public async createOneAndSelect(
+    entityLike: DeepPartial<EntityClass>,
+    entityManager?: EntityManager,
+  ): Promise<EntityClass> {
+    const { id } = await this.createOne(entityLike, entityManager);
     return this.selectOne(
       { id } as FindOptionsWhere<EntityClass>,
       { loadEagerRelations: true },
@@ -155,7 +166,7 @@ export class CommonService<EntityClass extends CommonEntity> {
     entityLike: DeepPartial<EntityClass>,
     entityManager?: EntityManager,
   ): Promise<EntityClass> {
-    const { id } = await this.repository.manager.transaction(async (runEntityManager) => {
+    return this.repository.manager.transaction(async (runEntityManager) => {
       const transactionalEntityManager = entityManager || runEntityManager;
 
       const mergeIntoEntity = await this.selectOne(
@@ -168,7 +179,20 @@ export class CommonService<EntityClass extends CommonEntity> {
         throw new Error('INPUT_DATA_ERROR');
       });
     });
+  }
 
+  /**
+   * [description]
+   * @param conditions
+   * @param entityLike
+   * @param entityManager
+   */
+  public async updateOneAndSelect(
+    conditions: FindOneOptions<EntityClass>['where'],
+    entityLike: DeepPartial<EntityClass>,
+    entityManager?: EntityManager,
+  ): Promise<EntityClass> {
+    const { id } = await this.updateOne(conditions, entityLike, entityManager);
     return this.selectOne(
       { id } as FindOptionsWhere<EntityClass>,
       { loadEagerRelations: true },
