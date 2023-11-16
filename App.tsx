@@ -1,23 +1,30 @@
-import React, { useEffect } from 'react';
-import { Button, SafeAreaView } from 'react-native';
-import { dataSource } from './src/Database';
-import { experiment } from './src/Actions';
+import React from 'react';
+
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+
+import { CategoriesScreen } from './src/screens/Categories/CategoriesScreen';
+import { AccountsScreen } from './src/screens/Accounts/AccountsScreen';
+
+import { SafeAreaView } from 'react-native';
+
+import { QueryClient, QueryClientProvider } from 'react-query';
+
+const Tab = createBottomTabNavigator();
+const queryClient = new QueryClient();
 
 function App() {
-  useEffect(() => {
-    const connect = async () => {
-      if (!dataSource.isInitialized) await dataSource.initialize();
-    };
-
-    connect();
-  }, []);
-
   return (
-    <SafeAreaView>
-      <Button title="Experiment one" onPress={() => experiment(1)} />
-      <Button title="Experiment 10" onPress={() => experiment(10)} />
-      <Button title="Experiment 10000" onPress={() => experiment(10000)} />
-    </SafeAreaView>
+    <QueryClientProvider client={queryClient}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <NavigationContainer>
+          <Tab.Navigator initialRouteName="Accounts" screenOptions={{ headerShown: false }}>
+            <Tab.Screen name="Accounts" component={AccountsScreen} />
+            <Tab.Screen name="Categories" component={CategoriesScreen} />
+          </Tab.Navigator>
+        </NavigationContainer>
+      </SafeAreaView>
+    </QueryClientProvider>
   );
 }
 

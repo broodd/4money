@@ -9,8 +9,8 @@ import { EntityManager } from 'typeorm';
  * [description]
  */
 export class CategoriesService extends CommonService<CategoryEntity> {
-  constructor() {
-    super(CategoryEntity, dataSource.getRepository(CategoryEntity));
+  constructor(repository) {
+    super(CategoryEntity, repository);
   }
 
   /**
@@ -35,5 +35,3 @@ export class CategoriesService extends CommonService<CategoryEntity> {
     });
   }
 }
-
-export const categoriesService = new CategoriesService();

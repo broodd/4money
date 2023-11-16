@@ -2,9 +2,6 @@ import { Column, Entity } from 'typeorm';
 
 import { CommonEntity } from './common.entity';
 
-import { AccountTypeEnum } from '../enums/account-type.enum';
-import { CurrencyCodeEnum } from '../enums/currency.enum';
-
 /**
  * [description]
  */
@@ -34,14 +31,14 @@ export class AccountEntity extends CommonEntity {
   /**
    * [description]
    */
-  @Column({ type: 'varchar', default: CurrencyCodeEnum.UAH, nullable: false })
-  public readonly currencyCode: CurrencyCodeEnum;
+  // @Column({ type: 'varchar', default: CurrencyCodeEnum.UAH, nullable: false })
+  // public readonly currencyCode: CurrencyCodeEnum;
 
   /**
    * [description]
    */
-  @Column({ type: 'varchar', default: AccountTypeEnum.REGULAR, nullable: false })
-  public readonly type: AccountTypeEnum;
+  // @Column({ type: 'varchar', default: AccountTypeEnum.REGULAR, nullable: false })
+  // public readonly type: AccountTypeEnum;
 
   /**
    * [description]

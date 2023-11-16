@@ -1,7 +1,6 @@
 import { TransactionEntity } from '../entities/transaction.entity';
 import { CommonService } from './common.service';
 
-import { dataSource } from '../data-sources/data-source';
 import { FindManyBracketsOptions } from '../interfaces/common.interface';
 import { EntityManager } from 'typeorm';
 import { TransactionStatsDto } from '../dto/transactions';
@@ -10,8 +9,8 @@ import { TransactionStatsDto } from '../dto/transactions';
  * [description]
  */
 export class TransactionsService extends CommonService<TransactionEntity> {
-  constructor() {
-    super(TransactionEntity, dataSource.getRepository(TransactionEntity));
+  constructor(repository) {
+    super(TransactionEntity, repository);
   }
 
   /**
@@ -41,6 +40,3 @@ export class TransactionsService extends CommonService<TransactionEntity> {
     }, {} as Record<string, TransactionStatsDto>);
   }
 }
-
-export const transactionsService = new TransactionsService();
-(window as any).transactionsService = transactionsService;

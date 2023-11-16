@@ -1,7 +1,6 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 
 import { CategoryTypeEnum } from '../enums/category-type.enum';
-import { CurrencyCodeEnum } from '../enums/currency.enum';
 import { TransactionEntity } from './transaction.entity';
 import { CommonEntity } from './common.entity';
 
@@ -34,8 +33,8 @@ export class CategoryEntity extends CommonEntity {
   /**
    * [description]
    */
-  @Column({ type: 'varchar', default: CurrencyCodeEnum.UAH, nullable: false })
-  public readonly currencyCode: CurrencyCodeEnum;
+  // @Column({ type: 'varchar', default: CurrencyCodeEnum.UAH, nullable: false })
+  // public readonly currencyCode: CurrencyCodeEnum;
 
   // /**
   //  * [description]

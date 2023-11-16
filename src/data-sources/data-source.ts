@@ -16,3 +16,10 @@ export const dataSource = new DataSource({
   logging: true,
 });
 import './polyfill';
+
+import { AccountsService, CategoriesService, TransactionsService } from '../services';
+export const transactionsService = new TransactionsService(
+  dataSource.getRepository(TransactionEntity),
+);
+export const accountsService = new AccountsService(dataSource.getRepository(AccountEntity));
+export const categoriesService = new CategoriesService(dataSource.getRepository(CategoryEntity));
