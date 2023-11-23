@@ -21,16 +21,19 @@ export interface TransactionsGroup extends TransactionsGroupItem {
  */
 export const groupTransactionsByDate = (transactions: TransactionEntity[]): TransactionsGroup[] => {
   const groups = transactions.reduce((groups, el) => {
-    const date = el.date.toISOString().slice(0, 10);
-    if (!groups[date]) {
-      groups[date] = {
+    const date = new Date(el.date);
+    date.setHours(0, 0, 0, 0);
+    const dateString = date.toISOString();
+
+    if (!groups[dateString]) {
+      groups[dateString] = {
         transactions: [],
         total: 0,
       };
     }
 
-    groups[date].total += el.amount;
-    groups[date].transactions.push(el);
+    groups[dateString].total += el.amount;
+    groups[dateString].transactions.push(el);
 
     return groups;
   }, {} as Record<string, TransactionsGroupItem>);

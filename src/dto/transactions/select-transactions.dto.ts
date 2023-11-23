@@ -11,25 +11,25 @@ export class SelectTransactionsDto implements FindManyBracketsOptions<Transactio
    * [description]
    * @param data
    */
-  constructor(data?: Partial<SelectTransactionsDto>) {
+  constructor(data?: Partial<FindManyBracketsOptions<TransactionEntity> & SelectTransactionsDto>) {
     Object.assign(this, data);
   }
   /**
    * [description]
    */
-  public createdAt?: Date[];
+  public date?: Date[];
 
   /**
    * [description]
    */
   public get whereBrackets(): Brackets {
-    const { createdAt } = this;
+    const { date } = this;
 
     return new Brackets((qb) => {
-      if (createdAt?.length)
-        qb.andWhere('TransactionEntity.createdAt BETWEEN :createdAtFrom AND :createdAtTo', {
-          createdAtFrom: createdAt[0],
-          createdAtTo: createdAt[1],
+      if (date?.length)
+        qb.andWhere('TransactionEntity.date BETWEEN :dateFrom AND :dateTo', {
+          dateFrom: date[0],
+          dateTo: date[1],
         });
     });
   }
