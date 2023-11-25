@@ -13,6 +13,11 @@ export interface FindManyBracketsOptions<Entity = any> extends FindManyOptions<E
    * [description]
    */
   whereBrackets?: FindOneOptions['where'];
+
+  /**
+   * [description]
+   */
+  whereBracketsString?: FindOneOptions['where'];
 }
 
 /**

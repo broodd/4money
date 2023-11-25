@@ -1,8 +1,8 @@
 import { CategoryEntity } from '../entities/category.entity';
 import { CommonService } from './common.service';
 
-import { FindManyBracketsOptions } from '../interfaces/common.interface';
 import { EntityManager } from 'typeorm';
+import { SelectCategoriesDto } from '../dto/select-categoris.dto';
 
 /**
  * [description]
@@ -18,13 +18,19 @@ export class CategoriesService extends CommonService<CategoryEntity> {
    * @param entityManager
    */
   public async selectManyWithTotal(
-    options: FindManyBracketsOptions<CategoryEntity> = { loadEagerRelations: false },
+    options: SelectCategoriesDto,
     entityManager?: EntityManager,
   ): Promise<CategoryEntity[]> {
     const qb = this.find(options, entityManager);
     if (options.whereBrackets) qb.andWhere(options.whereBrackets);
 
-    qb.leftJoin('CategoryEntity.transactions', 'TransactionEntity');
+    const transactionsOptions = options.transactionsOptions.whereBracketsString;
+    qb.leftJoin(
+      'CategoryEntity.transactions',
+      'TransactionEntity',
+      transactionsOptions.conditions,
+      transactionsOptions.paramets,
+    );
     qb.addSelect('SUM(TransactionEntity.amount)', 'transactionsTotal');
     qb.addSelect('COUNT(TransactionEntity.id)', 'transactionsCount');
     qb.addGroupBy('CategoryEntity.id');

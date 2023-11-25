@@ -1,4 +1,4 @@
-import { Between, Brackets, FindOneOptions, ILike, ObjectLiteral } from 'typeorm';
+import { Brackets } from 'typeorm';
 
 import { TransactionEntity } from '../../entities';
 import { FindManyBracketsOptions } from '../../interfaces/common.interface';
@@ -32,5 +32,26 @@ export class SelectTransactionsDto implements FindManyBracketsOptions<Transactio
           dateTo: date[1],
         });
     });
+  }
+
+  /**
+   * [description]
+   */
+  public get whereBracketsString(): { conditions: string; paramets: Record<string, any> } {
+    const { date } = this;
+
+    const conditions = [];
+    const paramets: Record<string, any> = {};
+
+    if (date?.length) {
+      conditions.push('(TransactionEntity.date BETWEEN :dateFrom AND :dateTo)');
+      paramets.dateFrom = date[0];
+      paramets.dateTo = date[1];
+    }
+
+    return {
+      conditions: conditions.join(' AND '),
+      paramets,
+    };
   }
 }

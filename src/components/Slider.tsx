@@ -1,11 +1,28 @@
 import React, { useEffect, useRef } from 'react';
+import Swiper from 'react-native-swiper';
 import { View } from 'react-native';
 
-import Swiper from 'react-native-swiper';
 import { getPrevOrNextDateByCurrent } from '../common/helpers';
 import { PeriodToolbar } from './PeriodToolbar';
+import { TypePeriodEnum } from '../enums';
 
-export const Slider = ({ slides, type, date, onChangeDate, onPrev, onNext, children }) => {
+export const Slider = <T,>({
+  slides,
+  type,
+  date,
+  onChangeDate,
+  onPrev,
+  onNext,
+  children,
+}: {
+  slides: T[];
+  type: TypePeriodEnum;
+  date: Date;
+  onChangeDate: (date) => void;
+  onPrev: (date) => void;
+  onNext: (date) => void;
+  children: React.ReactNode;
+}) => {
   const swiperInstance = useRef<Swiper | null>(null);
 
   const getSlideIndex = () => {
@@ -16,10 +33,20 @@ export const Slider = ({ slides, type, date, onChangeDate, onPrev, onNext, child
     const oldIndex = getSlideIndex();
     const direction = oldIndex < index ? 'next' : 'prev';
 
+    if (index < 0 || oldIndex < 0)
+      return swiperInstance.current?.setState((prevState) => ({ ...prevState, index: 1 }));
+
     /**
      * Check when redirect from start by scrollTo in useEffect
      */
     if (oldIndex === 0 && index === 1) return;
+
+    /**
+     * Check when scroll from
+     */
+    if (oldIndex - index > 1) {
+      return setTimeout(() => swiperInstance.current?.scrollTo(1, false), 0);
+    }
 
     const selectedDate = getPrevOrNextDateByCurrent[direction][type](date);
     onChangeDate(selectedDate);
@@ -44,9 +71,8 @@ export const Slider = ({ slides, type, date, onChangeDate, onPrev, onNext, child
   };
 
   useEffect(() => {
-    if (getSlideIndex() === 0) {
-      setTimeout(() => swiperInstance.current?.scrollTo(1, false), 0);
-    }
+    const index = getSlideIndex();
+    if (index === 0) setTimeout(() => swiperInstance.current?.scrollTo(1, false), 0);
   }, [slides]);
 
   return (

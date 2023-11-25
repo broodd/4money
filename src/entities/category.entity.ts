@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 
+import { VirtualColumn } from '../data-sources/virtual-column.decorator';
 import { CategoryTypeEnum } from '../enums/category-type.enum';
 import { TransactionEntity } from './transaction.entity';
 import { CommonEntity } from './common.entity';
@@ -48,13 +49,15 @@ export class CategoryEntity extends CommonEntity {
   @OneToMany(() => TransactionEntity, ({ category }) => category)
   public readonly transactions: Partial<TransactionEntity>[];
 
-  // /**
-  //  * [description]
-  //  */
-  // public readonly transactionsTotal: number;
+  /**
+   * [description]
+   */
+  @VirtualColumn()
+  public readonly transactionsTotal: number;
 
-  // /**
-  //  * [description]
-  //  */
-  // public readonly transactionsCount: number;
+  /**
+   * [description]
+   */
+  @VirtualColumn()
+  public readonly transactionsCount: number;
 }

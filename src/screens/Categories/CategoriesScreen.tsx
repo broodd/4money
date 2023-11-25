@@ -1,22 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useMutation, useQuery } from 'react-query';
+import { PieChart } from 'react-native-chart-kit';
 
-import {
-  transactionsService,
-  categoriesService,
-  accountsService,
-} from '../../data-sources/data-source';
-import { SelectTransactionsDto, TransactionStatsDto } from '../../dto/transactions';
+import { categoriesService, accountsService } from '../../data-sources/data-source';
+import { getDatesByTypePeriod, getPrevOrNextDateByCurrent } from '../../common/helpers';
 import { CreateOrUpdateCategoryModal } from './CreateUpdateCategoryScreen';
+import { SelectCategoriesDto } from '../../dto/select-categoris.dto';
 import { CategoryTypeEnum } from '../../enums/category-type.enum';
+import { SelectTransactionsDto } from '../../dto/transactions';
 import { Slider } from '../../components/Slider';
 import { CategoryEntity } from '../../entities';
 import { TypePeriodEnum } from '../../enums';
-import { getDatesByTypePeriod, getPrevOrNextDateByCurrent } from '../../common/helpers';
 
 interface Slide {
-  transactionsStats: Record<string, TransactionStatsDto>;
+  categories: CategoryEntity[];
   date: Date;
 }
 
@@ -33,7 +31,35 @@ export const CategoriesScreen = () => {
   const [type, setType] = useState<TypePeriodEnum>(TypePeriodEnum.month);
   const [date, setDate] = useState<Date>(today);
 
-  const { data: categories = [], refetch } = useQuery(
+  const data = [
+    {
+      name: 'Seoul',
+      population: 21500000,
+      color: 'rgba(131, 167, 234, 1)',
+    },
+    {
+      name: 'Toronto',
+      population: 2800000,
+      color: '#F00',
+    },
+    {
+      name: 'Beijing',
+      population: 527612,
+      color: 'red',
+    },
+    {
+      name: 'New York',
+      population: 8538000,
+      color: '#ffffff',
+    },
+    {
+      name: 'Moscow',
+      population: 11920000,
+      color: 'rgb(0, 0, 255)',
+    },
+  ];
+
+  const { data: categories = [] } = useQuery(
     'categories',
     async () => await categoriesService.selectMany(),
   );
@@ -44,11 +70,11 @@ export const CategoriesScreen = () => {
 
   const createOrEditMutation = useMutation(
     async (entityLike: Partial<CategoryEntity>) => await categoriesService.createOne(entityLike),
-    { onSuccess: () => refetch() },
+    { onSuccess: () => initialize(date) },
   );
   const deleteMutation = useMutation(
     async (conditions: Partial<CategoryEntity>) => await categoriesService.deleteOne(conditions),
-    { onSuccess: () => refetch() },
+    { onSuccess: () => initialize(date) },
   );
 
   const handleClickEdit = (category: CategoryEntity) => {
@@ -61,50 +87,54 @@ export const CategoriesScreen = () => {
     setIsModalOpen(true);
   };
 
-  const initialize = async (): Promise<void> => {
+  const initialize = async (currentDate: Date = today): Promise<void> => {
     const dates = [
-      getPrevOrNextDateByCurrent.prev[type](date),
+      getPrevOrNextDateByCurrent.prev[type](currentDate),
       today,
-      getPrevOrNextDateByCurrent.next[type](date),
+      getPrevOrNextDateByCurrent.next[type](currentDate),
     ];
 
     const promises = await Promise.all(
       dates.map((d) =>
-        transactionsService.selectManyWithTotalAndCount(
-          new SelectTransactionsDto({
-            date: getDatesByTypePeriod[type](d),
-            order: { date: 'desc' },
+        categoriesService.selectManyWithTotal(
+          new SelectCategoriesDto({
+            transactionsOptions: new SelectTransactionsDto({
+              date: getDatesByTypePeriod[type](d),
+            }),
+            order: { createdAt: 'desc' },
           }),
         ),
       ),
     );
 
     setSlides(
-      promises.map((transactionsStats, index) => ({
+      promises.map((categories, index) => ({
         date: dates[index],
-        transactionsStats,
+        categories,
       })),
     );
   };
 
   const handleSlidePrev = async (selectedDate) => {
-    const transactionsOptions = new SelectTransactionsDto({
-      date: getDatesByTypePeriod[type](selectedDate),
+    const options = new SelectCategoriesDto({
+      transactionsOptions: new SelectTransactionsDto({
+        date: getDatesByTypePeriod[type](selectedDate),
+      }),
+      order: { createdAt: 'desc' },
     });
-    const transactionsStats = await transactionsService.selectManyWithTotalAndCount(
-      transactionsOptions,
-    );
-    setSlides((prevState) => [{ date: selectedDate, transactionsStats }, ...prevState]);
+    const categories = await categoriesService.selectManyWithTotal(options);
+    setSlides((prevState) => [{ date: selectedDate, categories }, ...prevState]);
   };
 
   const handleSlideNext = async (selectedDate) => {
-    const transactionsOptions = new SelectTransactionsDto({
-      date: getDatesByTypePeriod[type](selectedDate),
+    const options = new SelectCategoriesDto({
+      transactionsOptions: new SelectTransactionsDto({
+        date: getDatesByTypePeriod[type](selectedDate),
+      }),
+      order: { createdAt: 'desc' },
     });
-    const transactionsStats = await transactionsService.selectManyWithTotalAndCount(
-      transactionsOptions,
-    );
-    setSlides((prevState) => [...prevState, { date: selectedDate, transactionsStats }]);
+    const categories = await categoriesService.selectManyWithTotal(options);
+    setSlides((prevState) => [...prevState, { date: selectedDate, categories }]);
   };
 
   useEffect(() => {
@@ -139,6 +169,10 @@ export const CategoriesScreen = () => {
         </TouchableOpacity>
       </View>
 
+      {slides.map((slide, index) => (
+        <Text key={index}>{slide.date.toDateString()}</Text>
+      ))}
+
       <Slider
         slides={slides}
         type={type}
@@ -149,14 +183,28 @@ export const CategoriesScreen = () => {
       >
         {slides.map((slide, slideIndex) => (
           <ScrollView key={slideIndex}>
-            <Text>{slideIndex}</Text>
-            {categories.map((category, index) => (
+            <PieChart
+              data={data}
+              width={300}
+              height={200}
+              hasLegend={false}
+              chartConfig={{
+                color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+              }}
+              accessor="population"
+              backgroundColor="transparent"
+              paddingLeft="15"
+            />
+
+            {slide.categories.map((category, index) => (
               <TouchableOpacity
                 key={index}
                 style={{ flexDirection: 'row', justifyContent: 'space-between' }}
                 onPress={() => handleClickEdit(category)}
               >
                 <Text>{category.name}</Text>
+                <Text>{category.transactionsTotal}</Text>
+                <Text>{category.transactionsCount}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -167,8 +215,8 @@ export const CategoriesScreen = () => {
         isOpen={isModalOpen}
         initialCategory={selectedCategory}
         onClose={() => setIsModalOpen(false)}
-        onSave={async (data) => await createOrEditMutation.mutateAsync(data)}
-        onDelete={async (data) => await deleteMutation.mutateAsync(data)}
+        onSave={(data) => createOrEditMutation.mutateAsync(data)}
+        onDelete={(data) => deleteMutation.mutateAsync(data)}
       />
     </View>
   );

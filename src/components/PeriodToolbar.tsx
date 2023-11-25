@@ -1,8 +1,19 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { transformDateByTypePeriod } from '../common/helpers';
+import { TypePeriodEnum } from '../enums';
 
-export const PeriodToolbar = ({ date, type, onPrev, onNext }) => {
+export const PeriodToolbar = ({
+  date,
+  type,
+  onPrev,
+  onNext,
+}: {
+  type: TypePeriodEnum;
+  date: Date;
+  onPrev: (date) => void;
+  onNext: (date) => void;
+}) => {
   return (
     <View
       style={{
