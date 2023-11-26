@@ -34,8 +34,9 @@ export const TransactionsScreen = () => {
     await transactionsService.createOne({
       type: TransactionTypeEnum.EXPENSE,
       date,
-      amount: 565,
-      categoryId: 'e2788e18-2318-414c-9b5a-09ba9cb6075c',
+      amount: 10000,
+      // categoryId: 'e2788e18-2318-414c-9b5a-09ba9cb6075c',
+      categoryId: '7a689ee1-6c54-409f-a510-dc4619bee035',
     });
     await initialize(date);
   };
