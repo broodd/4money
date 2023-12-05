@@ -13,6 +13,15 @@ import { AccountEntity } from './account.entity';
 export class TransactionEntity extends CommonEntity {
   /**
    * [description]
+   * @param data
+   */
+  constructor(data?: Partial<TransactionEntity>) {
+    super();
+    if (data) Object.assign(this, data);
+  }
+
+  /**
+   * [description]
    */
   @Column({ type: 'varchar', nullable: false })
   public readonly type: TransactionTypeEnum;
@@ -37,7 +46,7 @@ export class TransactionEntity extends CommonEntity {
    * [description]
    */
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', nullable: false })
-  public readonly date: Date;
+  public readonly date?: Date;
 
   // /**
   //  * [description]
@@ -53,13 +62,13 @@ export class TransactionEntity extends CommonEntity {
     nullable: true,
   })
   @JoinColumn()
-  public readonly category: Partial<CategoryEntity>;
+  public category: Partial<CategoryEntity>;
 
   /**
    * [description]
    */
   @Column({ type: 'uuid', nullable: true })
-  public readonly categoryId: string;
+  public categoryId: string;
 
   /**
    * [description]
@@ -69,11 +78,11 @@ export class TransactionEntity extends CommonEntity {
     nullable: true,
   })
   @JoinColumn()
-  public readonly account: Partial<AccountEntity>;
+  public account: Partial<AccountEntity>;
 
   /**
    * [description]
    */
   @Column({ type: 'uuid', nullable: true })
-  public readonly accountId: string;
+  public accountId: string;
 }

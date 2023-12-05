@@ -31,6 +31,12 @@ export class AccountEntity extends CommonEntity {
   /**
    * [description]
    */
+  @Column({ type: 'varchar', length: 16, nullable: true })
+  public readonly color?: string;
+
+  /**
+   * [description]
+   */
   // @Column({ type: 'varchar', default: CurrencyCodeEnum.UAH, nullable: false })
   // public readonly currencyCode: CurrencyCodeEnum;
 

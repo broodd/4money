@@ -8,7 +8,7 @@ import { TypePeriodEnum } from '../enums';
 
 export const Slider = <T,>({
   slides,
-  type,
+  typePeriod,
   date,
   onChangeDate,
   onPrev,
@@ -16,7 +16,7 @@ export const Slider = <T,>({
   children,
 }: {
   slides: T[];
-  type: TypePeriodEnum;
+  typePeriod: TypePeriodEnum;
   date: Date;
   onChangeDate: (date) => void;
   onPrev: (date) => void;
@@ -48,11 +48,11 @@ export const Slider = <T,>({
       return setTimeout(() => swiperInstance.current?.scrollTo(1, false), 0);
     }
 
-    const selectedDate = getPrevOrNextDateByCurrent[direction][type](date);
+    const selectedDate = getPrevOrNextDateByCurrent[direction][typePeriod](date);
     onChangeDate(selectedDate);
 
     if (index > 0 && index < slides.length - 1) return;
-    const newDate = getPrevOrNextDateByCurrent[direction][type](selectedDate);
+    const newDate = getPrevOrNextDateByCurrent[direction][typePeriod](selectedDate);
 
     if (index === 0) await onPrev(newDate);
     else await onNext(newDate);
@@ -64,7 +64,7 @@ export const Slider = <T,>({
       return swiperInstance.current.scrollTo(index - 1, true);
     }
 
-    const selectedDate = getPrevOrNextDateByCurrent.prev[type](date);
+    const selectedDate = getPrevOrNextDateByCurrent.prev[typePeriod](date);
     onChangeDate(selectedDate);
 
     await onPrev(selectedDate);
@@ -72,27 +72,33 @@ export const Slider = <T,>({
 
   useEffect(() => {
     const index = getSlideIndex();
-    if (index === 0) setTimeout(() => swiperInstance.current?.scrollTo(1, false), 0);
+    if (index === 0) {
+      setTimeout(() => swiperInstance.current?.scrollTo(1, false), 1);
+    }
   }, [slides]);
 
   return (
     <View style={{ height: '100%' }}>
-      <PeriodToolbar
-        date={date}
-        type={type}
-        onPrev={handleSlidePrev}
-        onNext={() => swiperInstance.current?.scrollTo(getSlideIndex() + 1, true)}
-      />
+      {date && (
+        <PeriodToolbar
+          date={date}
+          typePeriod={typePeriod}
+          onPrev={handleSlidePrev}
+          onNext={() => swiperInstance.current.scrollTo(getSlideIndex() + 1, true)}
+        />
+      )}
 
-      <Swiper
-        style={{ height: '100%' }}
-        ref={swiperInstance}
-        loop={false}
-        showsPagination={false}
-        onIndexChanged={handleSlideChanged}
-      >
-        {children}
-      </Swiper>
+      {slides && (
+        <Swiper
+          style={{ height: '100%' }}
+          ref={swiperInstance}
+          loop={false}
+          showsPagination={false}
+          onIndexChanged={handleSlideChanged}
+        >
+          {children}
+        </Swiper>
+      )}
     </View>
   );
 };

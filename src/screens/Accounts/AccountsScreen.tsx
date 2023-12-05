@@ -1,29 +1,35 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { useQuery, useQueryClient } from 'react-query';
 
 import { CreateOrUpdateAccountModal } from './CreateUpdateAccountScreen';
 import { accountsService } from '../../data-sources/data-source';
-import { useMutation, useQuery } from 'react-query';
 import { AccountEntity } from '../../entities';
 
 export const AccountsScreen = () => {
+  const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<AccountEntity>(
     new AccountEntity({ name: '', balance: 0, description: '' }),
   );
-  const { data: accounts = [], refetch } = useQuery(
+  const { data: accounts = [] } = useQuery(
     'accounts',
-    async () => await accountsService.selectMany(),
+    async () =>
+      await accountsService.selectMany({
+        order: { createdAt: 'desc' },
+      }),
   );
 
-  const createOrEditMutation = useMutation(
-    async (entityLike: Partial<AccountEntity>) => await accountsService.createOne(entityLike),
-    { onSuccess: () => refetch() },
-  );
-  const deleteMutation = useMutation(
-    async (conditions: Partial<AccountEntity>) => await accountsService.deleteOne(conditions),
-    { onSuccess: () => refetch() },
-  );
+  const handleSaveAccount = async (entityLike: Partial<AccountEntity>) => {
+    await accountsService.createOne(entityLike);
+    queryClient.refetchQueries('accounts');
+  };
+
+  const handleDeleteAccount = async (entityLike: Partial<AccountEntity>) => {
+    setIsModalOpen(false);
+    await accountsService.deleteOne(entityLike);
+    queryClient.refetchQueries('accounts');
+  };
 
   const handleClickEdit = (account: AccountEntity) => {
     setSelectedAccount(account);
@@ -35,43 +41,52 @@ export const AccountsScreen = () => {
     setIsModalOpen(true);
   };
 
-  // const queryClient = useQueryClient();
-  // const handleSave = () => {
-  //   queryClient.invalidateQueries('accounts')
-  // };
-
   return (
     <View>
       <View
         style={{
           height: 50,
-          flexDirection: 'row',
           alignItems: 'center',
+          flexDirection: 'row',
           justifyContent: 'space-between',
+          paddingHorizontal: 15,
         }}
       >
-        <TouchableOpacity
-          onPress={() => {
-            return;
-          }}
-        >
-          <Text>Menu</Text>
-        </TouchableOpacity>
-        <Text>{accounts.reduce((acc, current) => (acc += current.balance), 0)}</Text>
+        <Text style={{ fontSize: 22 }}>
+          {accounts.reduce((acc, current) => (acc += current.balance), 0)}
+        </Text>
         <TouchableOpacity onPress={handleClickCreate}>
-          <Text>Add</Text>
+          <Text style={{ fontSize: 22 }}>Add</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView>
-        {accounts.map((account, index) => (
+        {accounts.map((account) => (
           <TouchableOpacity
-            key={index}
-            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+            key={account.id}
             onPress={() => handleClickEdit(account)}
+            style={{
+              padding: 10,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottomWidth: 1,
+              borderBottomColor: 'lightgray',
+            }}
           >
-            <Text>{account.name}</Text>
-            <Text>{account.balance}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View
+                style={{
+                  backgroundColor: account.color,
+                  borderRadius: 50,
+                  marginRight: 10,
+                  width: 30,
+                  height: 30,
+                }}
+              ></View>
+              <Text style={{ fontSize: 20 }}>{account.name}</Text>
+            </View>
+            <Text style={{ fontSize: 20 }}>{account.balance}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -80,8 +95,8 @@ export const AccountsScreen = () => {
         isOpen={isModalOpen}
         initialAccount={selectedAccount}
         onClose={() => setIsModalOpen(false)}
-        onSave={(data) => createOrEditMutation.mutateAsync(data)}
-        onDelete={(data) => deleteMutation.mutateAsync(data)}
+        onSave={handleSaveAccount}
+        onDelete={handleDeleteAccount}
       />
 
       {/* <Modal

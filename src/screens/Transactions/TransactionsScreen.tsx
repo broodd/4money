@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 
 import { accountsService, transactionsService } from '../../data-sources/data-source';
 import { TransactionTypeEnum } from '../../enums/transaction-type.enum';
@@ -14,6 +14,7 @@ import {
   getDatesByTypePeriod,
   TransactionsGroup,
 } from '../../common/helpers';
+import { useDate } from '../../common/store';
 
 interface Slide {
   transactionsGroup: TransactionsGroup[];
@@ -24,11 +25,15 @@ const today = new Date();
 today.setHours(0, 0, 0, 0);
 
 export const TransactionsScreen = () => {
-  const [slides, setSlides] = useState<Slide[]>([]);
+  const queryClient = useQueryClient();
   const [type, setType] = useState<TypePeriodEnum>(TypePeriodEnum.month);
-  const [date, setDate] = useState<Date>(today);
 
-  const { data: accounts = [] } = useQuery('accounts', () => accountsService.selectMany());
+  const { data: date } = useDate();
+  const { data: transactionsSlides = [] } = useQuery('transactionsSlides', () => initialize());
+  const { data: accounts = [] } = useQuery(
+    'accounts',
+    async () => await accountsService.selectMany(),
+  );
 
   const handleClickCreate = async () => {
     await transactionsService.createOne({
@@ -38,18 +43,16 @@ export const TransactionsScreen = () => {
       // categoryId: 'e2788e18-2318-414c-9b5a-09ba9cb6075c',
       categoryId: '7a689ee1-6c54-409f-a510-dc4619bee035',
     });
-    await initialize(date);
+
+    queryClient.refetchQueries('slides');
   };
 
-  const initialize = async (currentDate: Date = today): Promise<void> => {
-    console.log('--- initaliz date', currentDate);
+  const initialize = async (): Promise<Slide[]> => {
     const dates = [
-      getPrevOrNextDateByCurrent.prev[type](currentDate),
-      currentDate,
-      getPrevOrNextDateByCurrent.next[type](currentDate),
+      getPrevOrNextDateByCurrent.prev[type](date),
+      date,
+      getPrevOrNextDateByCurrent.next[type](date),
     ];
-
-    console.log('--- dates', dates);
 
     const promises = await Promise.all(
       dates.map((d) =>
@@ -62,39 +65,31 @@ export const TransactionsScreen = () => {
       ),
     );
 
-    setSlides(
-      promises.map((transactions, index) => ({
-        date: dates[index],
-        transactionsGroup: groupTransactionsByDate(transactions),
-      })),
-    );
+    return promises.map((transactions, index) => ({
+      date: dates[index],
+      transactionsGroup: groupTransactionsByDate(transactions),
+    }));
   };
 
   const handleSlidePrev = async (selectedDate) => {
-    console.log('--- handleSlidePrev', selectedDate);
-
     const transactionsOptions = new SelectTransactionsDto({
       date: getDatesByTypePeriod[type](selectedDate),
     });
     const transactions = await transactionsService.selectMany(transactionsOptions);
     const transactionsGroup = groupTransactionsByDate(transactions);
-    setSlides((prevState) => [{ date: selectedDate, transactionsGroup }, ...prevState]);
+    const data = [{ date: selectedDate, transactionsGroup }, ...transactionsSlides];
+    queryClient.setQueryData<Slide[]>('transactionsSlides', data);
   };
 
   const handleSlideNext = async (selectedDate) => {
-    console.log('--- handleSlideNext', selectedDate);
-
     const transactionsOptions = new SelectTransactionsDto({
       date: getDatesByTypePeriod[type](selectedDate),
     });
     const transactions = await transactionsService.selectMany(transactionsOptions);
     const transactionsGroup = groupTransactionsByDate(transactions);
-    setSlides((prevState) => [...prevState, { date: selectedDate, transactionsGroup }]);
+    const data = [...transactionsSlides, { date: selectedDate, transactionsGroup }];
+    queryClient.setQueryData<Slide[]>('transactionsSlides', data);
   };
-
-  useEffect(() => {
-    initialize();
-  }, []);
 
   return (
     <View style={{ flex: 1 }}>
@@ -121,19 +116,18 @@ export const TransactionsScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {slides.map((slide, index) => (
-        <Text key={index}>{slide.date.toDateString()}</Text>
-      ))}
-
       <Slider
-        slides={slides}
-        type={type}
+        slides={transactionsSlides}
+        typePeriod={type}
         date={date}
-        onChangeDate={(value) => setDate(value)}
+        onChangeDate={(value) => {
+          console.log('--- date', date);
+          queryClient.setQueryData('date', value);
+        }}
         onPrev={handleSlidePrev}
         onNext={handleSlideNext}
       >
-        {slides.map((slide, slideIndex) => (
+        {transactionsSlides.map((slide, slideIndex) => (
           <ScrollView key={slideIndex} style={{ height: '100%' }}>
             <Text>{slideIndex}</Text>
             <Text>{slide.date.toDateString()}</Text>
@@ -149,7 +143,6 @@ export const TransactionsScreen = () => {
                     key={index}
                     style={{ flexDirection: 'row', justifyContent: 'space-between' }}
                   >
-                    {/* <Text>{transaction.type}</Text> */}
                     <Text>{transaction.amount}</Text>
                     <Text>{transaction.description}</Text>
                     <Text>{transaction.categoryId ? 'cat' : ''}</Text>

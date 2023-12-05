@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { transformDateByTypePeriod } from '../common/helpers';
 import { TypePeriodEnum } from '../enums';
 
-export const PeriodToolbar = ({
+export const MenuToolbar = ({
   date,
   typePeriod,
   onPrev,
@@ -21,15 +21,14 @@ export const PeriodToolbar = ({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 15,
       }}
     >
       <TouchableOpacity onPress={onPrev}>
-        <Text style={{ fontSize: 25, lineHeight: 25, fontWeight: 'bold' }}>{'<'}</Text>
+        <Text>Prev</Text>
       </TouchableOpacity>
-      <Text style={{ fontSize: 18 }}>{transformDateByTypePeriod[typePeriod](date)}</Text>
+      <Text>{transformDateByTypePeriod[typePeriod](date)}</Text>
       <TouchableOpacity onPress={onNext}>
-        <Text style={{ fontSize: 25, lineHeight: 25, fontWeight: 'bold' }}>{'>'}</Text>
+        <Text>Next</Text>
       </TouchableOpacity>
     </View>
   );
