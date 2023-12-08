@@ -1,14 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import {
-  TouchableOpacity,
-  SafeAreaView,
-  StyleSheet,
-  TextInput,
-  Modal,
-  View,
-  Text,
-} from 'react-native';
+import { TouchableOpacity, SafeAreaView, TextInput, Modal, View, Text } from 'react-native';
 
 import { CategoryEntity } from '../../entities';
 import { CategoryTypeEnum } from '../../enums/category-type.enum';
@@ -30,6 +22,8 @@ export const CreateOrUpdateCategoryModal = ({
   onSave,
   onDelete,
 }: OwnProps) => {
+  if (!initialCategory) return;
+
   const { reset, control, handleSubmit, setValue } = useForm({
     defaultValues: initialCategory,
   });
@@ -130,7 +124,12 @@ export const CreateOrUpdateCategoryModal = ({
 
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 30 }}>
               {initialCategory.id && (
-                <TouchableOpacity onPress={() => onDelete({ id: initialCategory.id })}>
+                <TouchableOpacity
+                  onPress={() => {
+                    onDelete({ id: initialCategory.id });
+                    onClose();
+                  }}
+                >
                   <Text style={{ fontSize: 22, color: 'tomato', fontWeight: 'bold' }}>Delete</Text>
                 </TouchableOpacity>
               )}

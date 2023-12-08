@@ -1,2 +1,2 @@
 export * from './CategoriesScreen';
-export * from './CreateUpdateCategoryScreen';
+export * from './CreateUpdateCategoryModal';

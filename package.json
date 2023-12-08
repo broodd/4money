@@ -18,6 +18,7 @@
     "react": "18.2.0",
     "react-hook-form": "^7.48.2",
     "react-native": "^0.72.7",
+    "react-native-date-picker": "^4.3.4",
     "react-native-gesture-handler": "^2.13.4",
     "react-native-get-random-values": "^1.9.0",
     "react-native-pie-chart": "^3.0.1",

@@ -23,7 +23,7 @@ export const groupTransactionsByDate = (transactions: TransactionEntity[]): Tran
   const groups = transactions.reduce((groups, el) => {
     const date = new Date(el.date);
     date.setHours(0, 0, 0, 0);
-    const dateString = date.toISOString();
+    const dateString = date.toDateString();
 
     if (!groups[dateString]) {
       groups[dateString] = {

@@ -20,11 +20,11 @@ export class TransactionEntity extends CommonEntity {
     if (data) Object.assign(this, data);
   }
 
-  /**
-   * [description]
-   */
-  @Column({ type: 'varchar', nullable: false })
-  public readonly type: TransactionTypeEnum;
+  // /**
+  //  * [description]
+  //  */
+  // @Column({ type: 'varchar', nullable: false })
+  // public readonly type: TransactionTypeEnum;
 
   /**
    * [description]
@@ -46,7 +46,7 @@ export class TransactionEntity extends CommonEntity {
    * [description]
    */
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', nullable: false })
-  public readonly date?: Date;
+  public readonly date: Date;
 
   // /**
   //  * [description]
@@ -62,7 +62,7 @@ export class TransactionEntity extends CommonEntity {
     nullable: true,
   })
   @JoinColumn()
-  public category: Partial<CategoryEntity>;
+  public category: CategoryEntity;
 
   /**
    * [description]
@@ -78,7 +78,7 @@ export class TransactionEntity extends CommonEntity {
     nullable: true,
   })
   @JoinColumn()
-  public account: Partial<AccountEntity>;
+  public account: AccountEntity;
 
   /**
    * [description]

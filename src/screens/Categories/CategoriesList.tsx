@@ -31,7 +31,7 @@ export const CategoriesList = ({
           style={{
             borderRadius: 50,
             backgroundColor: category.color,
-            borderColor: 'lightgray',
+            borderColor: 'grey',
             borderWidth: 1,
             width: 30,
             height: 30,

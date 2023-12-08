@@ -12,7 +12,7 @@ const queryClient = new QueryClient();
 const routes = [{ name: 'Accounts' }, { name: 'Categories' }, { name: 'Transactions' }];
 
 function App() {
-  const [selected, setSelected] = useState(routes[1].name);
+  const [selected, setSelected] = useState(routes[2].name);
 
   return (
     <QueryClientProvider client={queryClient}>

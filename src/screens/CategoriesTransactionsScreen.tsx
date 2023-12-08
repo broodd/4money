@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import {
@@ -14,16 +14,16 @@ import {
   transactionsService,
 } from '../data-sources/data-source';
 import { CreateOrUpdateTransactionModal } from './Transactions/CreateUpdateTransactionModal';
-import { CreateOrUpdateCategoryModal } from './Categories/CreateUpdateCategoryScreen';
+import { CreateOrUpdateCategoryModal } from './Categories/CreateUpdateCategoryModal';
 import { TransactionsInnerScreen } from './Transactions/TransactionsInnerScreen';
 import { CategoriesInnerScreen } from './Categories/CategoriesInnerScreen';
-import { TransactionTypeEnum } from '../enums/transaction-type.enum';
 import { SelectCategoriesDto } from '../dto/select-categoris.dto';
-import { CategoryEntity, TransactionEntity } from '../entities';
+import { AccountEntity, CategoryEntity, TransactionEntity } from '../entities';
 import { CategoryTypeEnum } from '../enums/category-type.enum';
 import { SelectTransactionsDto } from '../dto/transactions';
 import { Slider } from '../components/Slider';
 import { TypePeriodEnum } from '../enums';
+import { FloatingButton } from '../components/FloatingButton';
 
 export interface Slide {
   transactionsGroups: TransactionsGroup[];
@@ -35,6 +35,7 @@ const today = new Date();
 today.setHours(0, 0, 0, 0);
 
 export const CategoriesTransactionsScreen = ({ route }: { route: string }) => {
+  const queryClient = useQueryClient();
   const [date, setDate] = useState<Date>(today);
 
   const { data: accounts } = useQuery('accounts', () =>
@@ -43,7 +44,6 @@ export const CategoriesTransactionsScreen = ({ route }: { route: string }) => {
 
   const [categoriesType, setCategoriesType] = useState<CategoryTypeEnum>(CategoryTypeEnum.EXPENSE);
   const typePeriod = TypePeriodEnum.month;
-  // const [typePeriod, setTypePeriod] = useState<TypePeriodEnum>(TypePeriodEnum.month);
 
   const handleSlidePrev = async (selectedDate: Date) => {
     const slide = await getCategoriesAndTransactionsByDate(selectedDate);
@@ -64,8 +64,10 @@ export const CategoriesTransactionsScreen = ({ route }: { route: string }) => {
       new SelectTransactionsDto({
         date: period,
         order: { date: 'desc', createdAt: 'desc' },
+        loadEagerRelations: true,
       }),
     );
+
     const transactionsGroups = groupTransactionsByDate(transactions);
 
     const categories = await categoriesService.selectManyWithTotal(
@@ -102,18 +104,17 @@ export const CategoriesTransactionsScreen = ({ route }: { route: string }) => {
 
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryEntity>(
-    new CategoryEntity({ name: '', type: CategoryTypeEnum.EXPENSE }),
-  );
+  const [selectedCategory, setSelectedCategory] = useState<CategoryEntity>();
 
   const handleChangeCategoriesType = (type) => setCategoriesType(type);
 
   const handlePressCategory = (category: CategoryEntity, isLongPress: boolean) => {
+    setSelectedCategory(category);
     if (isEditMode || isLongPress) {
-      setSelectedCategory(category);
       setIsCategoryModalOpen(true);
     } else {
-      setSelectedCategory(category);
+      !selectedAccount && setSelectedAccount(accounts[0]);
+      setSelectedTransaction(new TransactionEntity({ date }));
       setIsTransactionModalOpen(true);
     }
   };
@@ -126,24 +127,45 @@ export const CategoriesTransactionsScreen = ({ route }: { route: string }) => {
   const handleSaveCategory = async (entityLike: Partial<CategoryEntity>) => {
     await categoriesService.createOne(entityLike);
     await initialize();
+    await queryClient.refetchQueries('accounts');
     setIsEditMode(false);
   };
 
   const handleDeleteCategory = async (entityLike: Partial<CategoryEntity>) => {
     await categoriesService.deleteOne(entityLike);
     await initialize();
+    await queryClient.refetchQueries('accounts');
     setIsEditMode(false);
   };
 
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState<TransactionEntity>(
-    new TransactionEntity({ type: TransactionTypeEnum.EXPENSE, amount: 0 }),
-  );
+  const [selectedAccount, setSelectedAccount] = useState<AccountEntity>();
+  const [selectedTransaction, setSelectedTransaction] = useState<TransactionEntity>();
+
+  const handlePressTransaction = (transaction: TransactionEntity) => {
+    setSelectedAccount(transaction.account);
+    setSelectedCategory(transaction.category);
+    setSelectedTransaction(transaction);
+    setIsTransactionModalOpen(true);
+  };
+
+  const handlePressCreateTransaction = () => {
+    !selectedAccount && setSelectedAccount(accounts[0]);
+    !selectedCategory && setSelectedCategory(slides[0]?.categories[0]);
+    setSelectedTransaction(new TransactionEntity({ date }));
+    setIsTransactionModalOpen(true);
+  };
 
   const handleSaveTransaction = async (entityLike: Partial<TransactionEntity>) => {
     await transactionsService.createOne(entityLike);
     await initialize();
-    setIsTransactionModalOpen(false);
+    await queryClient.refetchQueries('accounts');
+  };
+
+  const handleDeleteTransaction = async (entityLike: Partial<TransactionEntity>) => {
+    await transactionsService.deleteOne(entityLike);
+    await initialize();
+    await queryClient.refetchQueries('accounts');
   };
 
   useEffect(() => {
@@ -152,6 +174,8 @@ export const CategoriesTransactionsScreen = ({ route }: { route: string }) => {
 
   return (
     <View style={{ flex: 1 }}>
+      <FloatingButton onPress={handlePressCreateTransaction} />
+
       <View
         style={{
           height: 50,
@@ -169,9 +193,11 @@ export const CategoriesTransactionsScreen = ({ route }: { route: string }) => {
             <Text style={{ fontSize: 22 }}>Add</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity onPress={() => setIsEditMode(!isEditMode)}>
-          <Text style={{ fontSize: 22 }}>{isEditMode ? 'Cancel' : 'Edit'}</Text>
-        </TouchableOpacity>
+        {route === 'Categories' && (
+          <TouchableOpacity onPress={() => setIsEditMode(!isEditMode)}>
+            <Text style={{ fontSize: 22 }}>{isEditMode ? 'Cancel' : 'Edit'}</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={{ flex: 1 }}>
@@ -184,42 +210,47 @@ export const CategoriesTransactionsScreen = ({ route }: { route: string }) => {
             onPrev={handleSlidePrev}
             onNext={handleSlideNext}
           >
-            {slides.map((slide, slideIndex) =>
-              route === 'Categories' ? (
-                <CategoriesInnerScreen
-                  slide={slide}
-                  key={slideIndex}
-                  categoriesType={categoriesType}
-                  onChangeCategoryType={handleChangeCategoriesType}
-                  onPressCategory={handlePressCategory}
+            {slides.map((slide, slideIndex) => (
+              <View key={slideIndex}>
+                {route === 'Categories' ? (
+                  <CategoriesInnerScreen
+                    slide={slide}
+                    categoriesType={categoriesType}
+                    onChangeCategoryType={handleChangeCategoriesType}
+                    onPressCategory={handlePressCategory}
+                  />
+                ) : (
+                  <TransactionsInnerScreen
+                    slide={slide}
+                    key={slideIndex}
+                    onPressTransaction={handlePressTransaction}
+                  />
+                )}
+
+                <CreateOrUpdateCategoryModal
+                  isOpen={isCategoryModalOpen}
+                  initialCategory={selectedCategory}
+                  onClose={() => setIsCategoryModalOpen(false)}
+                  onSave={handleSaveCategory}
+                  onDelete={handleDeleteCategory}
                 />
-              ) : (
-                <TransactionsInnerScreen slide={slide} key={slideIndex} />
-              ),
-            )}
+
+                <CreateOrUpdateTransactionModal
+                  isOpen={isTransactionModalOpen}
+                  accounts={accounts}
+                  categories={slide.categories}
+                  initialAccount={selectedAccount}
+                  initialCategory={selectedCategory}
+                  initialTransaction={selectedTransaction}
+                  onClose={() => setIsTransactionModalOpen(false)}
+                  onSave={handleSaveTransaction}
+                  onDelete={handleDeleteTransaction}
+                />
+              </View>
+            ))}
           </Slider>
         ) : null}
       </View>
-
-      <CreateOrUpdateCategoryModal
-        isOpen={isCategoryModalOpen}
-        initialCategory={selectedCategory}
-        onClose={() => setIsCategoryModalOpen(false)}
-        onSave={handleSaveCategory}
-        onDelete={handleDeleteCategory}
-      />
-
-      <CreateOrUpdateTransactionModal
-        isOpen={isTransactionModalOpen}
-        date={date}
-        accounts={accounts}
-        categories={slides[0]?.categories}
-        initialCategory={selectedCategory}
-        initialTransaction={selectedTransaction}
-        onClose={() => setIsTransactionModalOpen(false)}
-        onSave={handleSaveTransaction}
-        onDelete={null}
-      />
     </View>
   );
 };

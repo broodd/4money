@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { TouchableOpacity, SafeAreaView, TextInput, Modal, View, Text } from 'react-native';
+import DatePicker from 'react-native-date-picker';
 
 import { AccountEntity, CategoryEntity, TransactionEntity } from '../../entities';
 import { SelectFromListModal } from '../../components/SelectFromListModal';
 
 interface OwnProps {
   isOpen: boolean;
-  date: Date;
+  initialAccount: AccountEntity;
   initialCategory: CategoryEntity;
   initialTransaction: TransactionEntity;
   accounts: AccountEntity[];
@@ -20,14 +21,15 @@ interface OwnProps {
 export const CreateOrUpdateTransactionModal = ({
   initialTransaction,
   initialCategory,
+  initialAccount,
   isOpen,
-  date,
   accounts,
   categories,
   onClose,
   onSave,
+  onDelete,
 }: OwnProps) => {
-  if (!accounts) return;
+  if (!accounts || !initialAccount) return;
 
   const { reset, control, handleSubmit } = useForm({
     defaultValues: initialTransaction,
@@ -41,18 +43,24 @@ export const CreateOrUpdateTransactionModal = ({
     setSelectedCategory(initialCategory);
   }, [initialCategory]);
 
-  const [selectedAccount, setSelectedAccount] = useState<AccountEntity>(accounts[0]);
+  useEffect(() => {
+    setSelectedAccount(initialAccount);
+  }, [initialAccount]);
+
+  const [selectedAccount, setSelectedAccount] = useState<AccountEntity>(initialAccount);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
   const [selectedCategory, setSelectedCategory] = useState<CategoryEntity>(initialCategory);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
+  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+
   const onSubmit = (data: TransactionEntity) => {
-    const now = new Date();
-    now.setDate(date.getDate());
-    now.setMonth(date.getMonth());
-    now.setFullYear(date.getFullYear());
-    onSave({ ...data, date: now, account: selectedAccount, category: selectedCategory });
+    onSave({
+      ...data,
+      account: selectedAccount,
+      category: selectedCategory,
+    });
     onClose();
   };
 
@@ -96,8 +104,7 @@ export const CreateOrUpdateTransactionModal = ({
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   placeholder="Amount"
-                  autoFocus={true}
-                  value={value.toString()}
+                  value={value?.toString()}
                   onBlur={onBlur}
                   onChangeText={(value) => onChange(value)}
                   style={{ fontSize: 20, marginBottom: 10 }}
@@ -106,6 +113,33 @@ export const CreateOrUpdateTransactionModal = ({
               name="amount"
               rules={{ required: true }}
             />
+
+            <Controller
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <View>
+                  <Text style={{ fontSize: 18 }} onPress={() => setIsDateModalOpen(true)}>
+                    {value?.toDateString().slice(0, 10)}
+                  </Text>
+                  <DatePicker
+                    modal
+                    open={isDateModalOpen}
+                    androidVariant="iosClone"
+                    date={value}
+                    mode="date"
+                    onConfirm={(date) => {
+                      setIsDateModalOpen(false);
+                      onChange(date);
+                    }}
+                    onCancel={() => {
+                      setIsDateModalOpen(false);
+                    }}
+                  />
+                </View>
+              )}
+              name="date"
+            />
+
             <Controller
               control={control}
               render={({ field: { onChange, onBlur, value } }) => (
@@ -114,14 +148,27 @@ export const CreateOrUpdateTransactionModal = ({
                   value={value}
                   onBlur={onBlur}
                   onChangeText={(value) => onChange(value)}
-                  style={{ fontSize: 14, marginBottom: 10 }}
+                  style={{ fontSize: 14, marginTop: 10 }}
                 />
               )}
               name="description"
             />
-            <TouchableOpacity onPress={handleSubmit(onSubmit)}>
-              <Text style={{ fontSize: 22, color: '#527853', fontWeight: 'bold' }}>Save</Text>
-            </TouchableOpacity>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 30 }}>
+              {initialTransaction.id && (
+                <TouchableOpacity
+                  onPress={() => {
+                    onDelete({ id: initialTransaction.id });
+                    onClose();
+                  }}
+                >
+                  <Text style={{ fontSize: 22, color: 'tomato', fontWeight: 'bold' }}>Delete</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity onPress={handleSubmit(onSubmit)}>
+                <Text style={{ fontSize: 22, color: '#527853', fontWeight: 'bold' }}>Save</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
