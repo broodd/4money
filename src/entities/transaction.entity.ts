@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 import { CommonEntity } from './common.entity';
 
-import { TransactionTypeEnum } from '../enums/transaction-type.enum';
+import { FloatIntColumnTransformer } from '../data-sources/float-int-column.transformer';
 import { CategoryEntity } from './category.entity';
 import { AccountEntity } from './account.entity';
 
@@ -20,19 +20,13 @@ export class TransactionEntity extends CommonEntity {
     if (data) Object.assign(this, data);
   }
 
-  // /**
-  //  * [description]
-  //  */
-  // @Column({ type: 'varchar', nullable: false })
-  // public readonly type: TransactionTypeEnum;
-
   /**
    * [description]
    */
   @Column({
     type: 'integer',
     nullable: false,
-    // transformer: FloatIntColumnTransformer,
+    transformer: FloatIntColumnTransformer,
   })
   public readonly amount: number;
 

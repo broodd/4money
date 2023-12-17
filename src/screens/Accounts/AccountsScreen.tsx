@@ -53,7 +53,9 @@ export const AccountsScreen = () => {
         }}
       >
         <Text style={{ fontSize: 22 }}>
-          {accounts.reduce((acc, current) => (acc += current.balance), 0)}
+          {accounts
+            ?.reduce((acc, current) => (acc += parseFloat(current.balance as unknown as string)), 0)
+            .toFixed(2)}
         </Text>
         <TouchableOpacity onPress={handleClickCreate}>
           <Text style={{ fontSize: 22 }}>Add</Text>

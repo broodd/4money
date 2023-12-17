@@ -39,8 +39,7 @@ export class CommonService<EntityClass extends CommonEntity> {
       const transactionalEntityManager = entityManager || runEntityManager;
 
       const entity = this.repository.create(entityLike);
-      return transactionalEntityManager.save(entity).catch((error) => {
-        console.log(error);
+      return transactionalEntityManager.save(entity).catch(() => {
         throw new Error('INPUT_DATA_ERROR');
       });
     });

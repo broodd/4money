@@ -157,7 +157,11 @@ export const CategoriesTransactionsScreen = ({ route }: { route: string }) => {
   };
 
   const handleSaveTransaction = async (entityLike: Partial<TransactionEntity>) => {
-    await transactionsService.createOne(entityLike);
+    if (entityLike.id) {
+      await transactionsService.updateOne({ id: entityLike.id }, entityLike);
+    } else {
+      await transactionsService.createOne(entityLike);
+    }
     await initialize();
     await queryClient.refetchQueries('accounts');
   };
@@ -186,7 +190,7 @@ export const CategoriesTransactionsScreen = ({ route }: { route: string }) => {
         }}
       >
         <Text style={{ fontSize: 22 }}>
-          {accounts?.reduce((acc, current) => (acc += current.balance), 0)}
+          {accounts?.reduce((acc, current) => (acc += current.balance), 0)?.toFixed(2)}
         </Text>
         {isEditMode && (
           <TouchableOpacity onPress={handlePressCreateCategory}>

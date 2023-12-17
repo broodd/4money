@@ -1,6 +1,7 @@
 import { Column, Entity } from 'typeorm';
 
 import { CommonEntity } from './common.entity';
+import { FloatIntColumnTransformer } from '../data-sources/float-int-column.transformer';
 
 /**
  * [description]
@@ -53,7 +54,7 @@ export class AccountEntity extends CommonEntity {
     type: 'integer',
     nullable: false,
     default: 0,
-    // transformer: FloatIntColumnTransformer,
+    transformer: FloatIntColumnTransformer,
   })
   public readonly balance: number;
 

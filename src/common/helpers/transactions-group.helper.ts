@@ -40,7 +40,7 @@ export const groupTransactionsByDate = (transactions: TransactionEntity[]): Tran
 
   return Object.keys(groups).map((date) => ({
     date,
-    total: groups[date].total,
+    total: parseFloat(groups[date].total.toFixed(2)),
     transactions: groups[date].transactions,
   }));
 };
