@@ -40,18 +40,6 @@ export class CategoryEntity extends CommonEntity {
   /**
    * [description]
    */
-  // @Column({ type: 'varchar', default: CurrencyCodeEnum.UAH, nullable: false })
-  // public readonly currencyCode: CurrencyCodeEnum;
-
-  // /**
-  //  * [description]
-  //  */
-  // @Column({ type: 'varchar', length: 32, nullable: true })
-  // public readonly color: string;
-
-  /**
-   * [description]
-   */
   @OneToMany(() => TransactionEntity, ({ category }) => category)
   public readonly transactions: Partial<TransactionEntity>[];
 

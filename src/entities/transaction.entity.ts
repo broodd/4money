@@ -42,12 +42,6 @@ export class TransactionEntity extends CommonEntity {
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', nullable: false })
   public readonly date: Date;
 
-  // /**
-  //  * [description]
-  //  */
-  // @Column({ type: 'varchar', enum: CurrencyEnum })
-  // public readonly currencyCode: CurrencyEnum;
-
   /**
    * [description]
    */

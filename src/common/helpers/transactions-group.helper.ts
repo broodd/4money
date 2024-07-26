@@ -1,4 +1,5 @@
 import { TransactionEntity } from '../../entities';
+import { CategoryTypeEnum } from '../../enums/category-type.enum';
 
 /**
  * [description]
@@ -32,7 +33,8 @@ export const groupTransactionsByDate = (transactions: TransactionEntity[]): Tran
       };
     }
 
-    groups[dateString].total += el.amount;
+    groups[dateString].total +=
+      el.amount * (el.category.type === CategoryTypeEnum.EXPENSE ? -1 : 1);
     groups[dateString].transactions.push(el);
 
     return groups;

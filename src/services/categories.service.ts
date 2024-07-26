@@ -31,7 +31,7 @@ export class CategoriesService extends CommonService<CategoryEntity> {
       transactionsOptions.conditions,
       transactionsOptions.paramets,
     );
-    qb.addSelect('COALESCE(SUM(TransactionEntity.amount), 0)', 'transactionsTotal');
+    qb.addSelect('COALESCE(SUM(TransactionEntity.amount / 100), 0)', 'transactionsTotal');
     qb.addSelect('COUNT(TransactionEntity.id)', 'transactionsCount');
     qb.addGroupBy('CategoryEntity.id');
 

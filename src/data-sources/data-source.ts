@@ -18,6 +18,7 @@ export const dataSource = new DataSource({
 import './polyfill';
 
 import { AccountsService, CategoriesService, TransactionsService } from '../services';
+
 export const transactionsService = new TransactionsService(
   dataSource.getRepository(TransactionEntity),
 );

@@ -38,18 +38,6 @@ export class AccountEntity extends CommonEntity {
   /**
    * [description]
    */
-  // @Column({ type: 'varchar', default: CurrencyCodeEnum.UAH, nullable: false })
-  // public readonly currencyCode: CurrencyCodeEnum;
-
-  /**
-   * [description]
-   */
-  // @Column({ type: 'varchar', default: AccountTypeEnum.REGULAR, nullable: false })
-  // public readonly type: AccountTypeEnum;
-
-  /**
-   * [description]
-   */
   @Column({
     type: 'integer',
     nullable: false,
@@ -57,15 +45,4 @@ export class AccountEntity extends CommonEntity {
     transformer: FloatIntColumnTransformer,
   })
   public readonly balance: number;
-
-  // /**
-  //  * [description]
-  //  */
-  // @ApiHideProperty()
-  // @ManyToOne(() => UserEntity, {
-  //   onDelete: 'CASCADE',
-  //   nullable: false,
-  // })
-  // @JoinColumn()
-  // public owner: Partial<UserEntity>;
 }

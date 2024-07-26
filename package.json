@@ -7,7 +7,9 @@
     "ios": "react-native run-ios --simulator 'iPhone 15'",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "typeorm:cli": "node -r tsconfig-paths/register -r ts-node/register ./node_modules/typeorm/cli --d ./src/typeorm.config.ts",
+    "typeorm:migration:generate": "npm run typeorm:cli -- migration:generate ./src/database/migrations/migration"
   },
   "dependencies": {
     "@react-native-community/masked-view": "^0.1.11",

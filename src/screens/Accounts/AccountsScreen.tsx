@@ -100,39 +100,6 @@ export const AccountsScreen = () => {
         onSave={handleSaveAccount}
         onDelete={handleDeleteAccount}
       />
-
-      {/* <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isModalOpen}
-        onRequestClose={() => setIsModalOpen(false)}
-      >
-        <TouchableOpacity
-          style={{ flex: 0.5 }}
-          onPress={() => setIsModalOpen(false)}
-        ></TouchableOpacity>
-        <View
-          style={{
-            flex: 0.5,
-            backgroundColor: 'white',
-          }}
-        >
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text>{selectedAccount.name}</Text>
-            <Text>{selectedAccount.balance}</Text>
-          </View>
-          <TouchableOpacity onPress={handleClickCreate}>
-            <Text>Edit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setIsModalOpen(false);
-            }}
-          >
-            <Text>Close</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal> */}
     </View>
   );
 };
